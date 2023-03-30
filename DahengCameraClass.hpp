@@ -25,29 +25,48 @@
 
 #include <GxIAPI.h>
 
+#define GRAY_N_CHANNELS 1
+#define COLOR_N_CHANNELS 3
+
 class DahengCameraClass
 {
 	private:
-		GX_DEV_HANDLE device;
-		GX_FRAME_DATA frame_data;
+		GX_DEV_HANDLE device = NULL;
+		GX_FRAME_DATA frameData;
 
-		void *pixel_data_mono;
-		void *pixel_data_rgb;
+		uint32_t nDevices = 0;
 
-		bool supports_color;
-		int height;
-		int width;
+		uint8_t *pixelDataGray = NULL;
+		uint8_t *pixelDataColor = NULL;
+
+		bool supportsColor = false;
+		int32_t nChannels = 0;
+		int64_t colorFilter = GX_COLOR_FILTER_NONE;
+		int64_t frameSize = 0;
 
 	public:
 		DahengCameraClass(void);
 
-		bool start_capture(void);
-		void stop_capture(void);
+		bool open(uint32_t device);
+		bool close(void);
 
-		void * get_frame_mono(void);
-		void * get_frame_rgb(void);
+		bool startCapture(void);
+		bool stopCapture(void);
+
+		uint8_t * getFrameGray(void);
+		uint8_t * getFrameColor(void);
+
+		bool getSupportsColor(void);
+		int32_t getChannels(void);
+		int64_t getImageSize(void);
+		int32_t getHeight(void);
+		int32_t getWidth(void);
 
 		~DahengCameraClass(void);
+
+	private:
+		void getNewFrame(void);
+		bool convertToColor(void);
 };
 
 /* END OF FILE */
