@@ -47,6 +47,9 @@ class DahengCameraClass
 		int64_t colorFilter = GX_COLOR_FILTER_NONE;
 		int64_t frameSize = 0;
 
+		bool opened = false;
+		bool capturing = false;
+
 	public:
 		DahengCameraClass(void);
 
@@ -69,6 +72,7 @@ class DahengCameraClass
 		~DahengCameraClass(void);
 
 	private:
+		bool setCameraProperties(void);
 		bool convertToColor(void);
 };
 

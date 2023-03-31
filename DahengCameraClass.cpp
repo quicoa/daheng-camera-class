@@ -67,44 +67,47 @@ DahengCameraClass::open(uint32_t device)
 	status = GXOpenDevice(&openParam, &this->device);
 	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
 
-	// Check whether this device is a color camera
-	status = GXIsImplemented(this->device, GX_ENUM_PIXEL_COLOR_FILTER, &this->supportsColor);
-	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
+	this->opened = true;
 
-	// Get the used color filter (if supported)
-	if (this->supportsColor)
+	// Set camera properties suitable for most cases
+	if (!this->setCameraProperties())
 	{
-		status = GXGetEnum(this->device, GX_ENUM_PIXEL_COLOR_FILTER, &this->colorFilter);
+		// Setting properties did not succeed: close camera
+		this->close();
+
+		return false;
 	}
-	this->nChannels = (this->supportsColor ? 3 : 1);
-
-	// Set acquisition mode
-	status = GXSetEnum(this->device, GX_ENUM_ACQUISITION_MODE, GX_ACQ_MODE_CONTINUOUS);
-	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
-
-	// Set Balance White Mode to Continuous
-	status = GXSetEnum(this->device, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_CONTINUOUS);
-	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
-
-	// Get the needed buffer size
-	status = GXGetInt(this->device, GX_INT_PAYLOAD_SIZE, &this->frameSize);
-	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
-	RETURN_VAL_IF_FAILED(this->frameSize > 0, false);
-
-	return true;
+	else
+	{
+		return true;
+	}
 }
 
 bool
 DahengCameraClass::close(void)
 {
-	GX_STATUS status = GXCloseDevice(this->device);
+	if (this->opened)
+	{
+		GX_STATUS status = GXCloseDevice(this->device);
 
-	return (status == GX_STATUS_SUCCESS);
+		this->opened = !(status == GX_STATUS_SUCCESS);
+
+		return (status == GX_STATUS_SUCCESS);
+	}
+	else
+	{
+		return true;
+	}
 }
 
 bool
 DahengCameraClass::startCapture(void)
 {
+	if (!this->opened)
+	{
+		return false;
+	}
+
 	// Allocate image buffers
 	this->pixelDataGray = (uint8_t *) malloc(this->frameSize * GRAY_N_CHANNELS);
 	this->pixelDataColor = (uint8_t *) malloc(this->frameSize * COLOR_N_CHANNELS);
@@ -113,14 +116,25 @@ DahengCameraClass::startCapture(void)
 	// Start image acquisition
 	GX_STATUS status = GXSendCommand(this->device, GX_COMMAND_ACQUISITION_START);
 
+	if (status != GX_STATUS_SUCCESS)
+	{
+		// Starting image acquisition did not succeed: free resources
+		this->stopCapture();
+	}
+
 	return (status == GX_STATUS_SUCCESS);
 }
 
 bool
 DahengCameraClass::stopCapture(void)
 {
-	// Stop image acquisition
-	GX_STATUS status = GXSendCommand(this->device, GX_COMMAND_ACQUISITION_STOP);
+	GX_STATUS status = GX_STATUS_SUCCESS;
+
+	if (this->capturing)
+	{
+		// Stop image acquisition
+		status = GXSendCommand(this->device, GX_COMMAND_ACQUISITION_STOP);
+	}
 
 	// Free image buffers
 	free(this->pixelDataGray);
@@ -183,6 +197,38 @@ int32_t
 DahengCameraClass::getWidth(void)
 {
 	return this->frameData.nWidth;
+}
+
+bool
+DahengCameraClass::setCameraProperties(void)
+{
+	GX_STATUS status;
+
+	// Check whether this device is a color camera
+	status = GXIsImplemented(this->device, GX_ENUM_PIXEL_COLOR_FILTER, &this->supportsColor);
+	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
+
+	// Get the used color filter (if supported)
+	if (this->supportsColor)
+	{
+		status = GXGetEnum(this->device, GX_ENUM_PIXEL_COLOR_FILTER, &this->colorFilter);
+	}
+	this->nChannels = (this->supportsColor ? 3 : 1);
+
+	// Set acquisition mode
+	status = GXSetEnum(this->device, GX_ENUM_ACQUISITION_MODE, GX_ACQ_MODE_CONTINUOUS);
+	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
+
+	// Set Balance White Mode to Continuous
+	status = GXSetEnum(this->device, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_CONTINUOUS);
+	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
+
+	// Get the needed buffer size
+	status = GXGetInt(this->device, GX_INT_PAYLOAD_SIZE, &this->frameSize);
+	RETURN_VAL_IF_FAILED(status == GX_STATUS_SUCCESS, false);
+	RETURN_VAL_IF_FAILED(this->frameSize > 0, false);
+
+	return true;
 }
 
 bool
