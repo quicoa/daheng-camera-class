@@ -25,6 +25,7 @@
 #define DAHENG_CAMERA_CLASS
 
 #include <cstdbool>
+#include <cstdint>
 
 #include <GxIAPI.h>
 

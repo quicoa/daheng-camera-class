@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <cstdbool>
+#include <cstdint>
 #include <cassert>
 
 #include <GxIAPI.h>

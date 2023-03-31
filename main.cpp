@@ -22,6 +22,7 @@
  */
 
 #include <cstdbool>
+#include <cstdint>
 #include <iostream>
 
 #include <opencv2/imgproc.hpp>
