@@ -56,8 +56,9 @@ class DahengCameraClass
 		bool startCapture(void);
 		bool stopCapture(void);
 
-		uint8_t * getFrameGray(void);
-		uint8_t * getFrameColor(void);
+		void updateFrame(void);
+		uint8_t * getGrayFrame(void);
+		uint8_t * getColorFrame(void);
 
 		bool getSupportsColor(void);
 		int32_t getChannels(void);
@@ -68,7 +69,6 @@ class DahengCameraClass
 		~DahengCameraClass(void);
 
 	private:
-		void getNewFrame(void);
 		bool convertToColor(void);
 };
 

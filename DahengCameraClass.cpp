@@ -134,18 +134,22 @@ DahengCameraClass::stopCapture(void)
 	return (status == GX_STATUS_SUCCESS);
 }
 
-uint8_t *
-DahengCameraClass::getFrameGray(void)
+void
+DahengCameraClass::updateFrame(void)
 {
-	this->getNewFrame();
+	// Calls GXGetImage to get an image.
+	while (GXGetImage(this->device, &this->frameData, 0 /* timeout */) != GX_STATUS_SUCCESS);
+}
 
+uint8_t *
+DahengCameraClass::getGrayFrame(void)
+{
 	return this->pixelDataGray;
 }
 
 uint8_t *
-DahengCameraClass::getFrameColor(void)
+DahengCameraClass::getColorFrame(void)
 {
-	this->getNewFrame();
 	this->convertToColor();
 
 	return this->pixelDataColor;
@@ -179,13 +183,6 @@ int32_t
 DahengCameraClass::getWidth(void)
 {
 	return this->frameData.nWidth;
-}
-
-void
-DahengCameraClass::getNewFrame(void)
-{
-	// Calls GXGetImage to get an image.
-	while (GXGetImage(this->device, &this->frameData, 0 /* timeout */) != GX_STATUS_SUCCESS);
 }
 
 bool
