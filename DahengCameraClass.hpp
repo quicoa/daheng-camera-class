@@ -21,6 +21,9 @@
  * SOFTWARE.
  */
 
+#ifndef DAHENG_CAMERA_CLASS
+#define DAHENG_CAMERA_CLASS
+
 #include <cstdbool>
 
 #include <GxIAPI.h>
@@ -68,5 +71,7 @@ class DahengCameraClass
 		void getNewFrame(void);
 		bool convertToColor(void);
 };
+
+#endif /* DAHENG_CAMERA_CLASS */
 
 /* END OF FILE */
