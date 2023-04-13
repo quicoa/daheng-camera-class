@@ -28,3 +28,6 @@ camera/SDK is created with the help of the 'C SDK Programming Reference Manual'
 from the GalaxySDK, so this repository provides no new technologies, only an
 abstraction layer.
 
+Refer to the VideoCapture Class Reference from OpenCV for an example on how to
+use a vision camera directly with OpenCV.
+
